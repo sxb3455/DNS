@@ -9,8 +9,8 @@ class Message(object):
     """
     This class represents a DNS message.
 
-    id (int): Identification number
-    flags (list): [0] (int): QR - Query/Reply
+    rid (int): Identification number
+    flags (list): [0] (int): QR - Query(0)/Reply(1)
                   [1] (int): OPCODE - Operation Code
                   [2] (int): AA - Authoritative Answer
                   [3] (int): TC - TrunCation
@@ -29,7 +29,7 @@ class Message(object):
     additionalRecords (list): Other helpful records as ResourceRecord objects.
     """
 
-    __slots__ = ( "id", "flags", "questions", "answers", "authorities",
+    __slots__ = ( "rid", "flags", "questions", "answers", "authorities",
                   "additionalRecords")
 
     # TYPE values
@@ -40,3 +40,37 @@ class Message(object):
 
     # CLASS values
     IN = 1
+
+    def __init__(self):
+        #print("constructing a message")
+        self.rid = 0
+        self.flags = [0] * 8
+        self.questions = []
+        self.answers = []
+        self.authorities = []
+        self.additionalRecords = []
+                    
+    def __str__(self):
+        s = ("Message:\n" +
+        "  ID={0}\n".format(self.rid) +
+        "  QR={0}\n".format(self.flags[0]) +
+        "  OPCODE={0}\n".format(self.flags[1]) +
+        "  AA={0}\n".format(self.flags[2]) +
+        "  TC={0}\n".format(self.flags[3]) +
+        "  RD={0}\n".format(self.flags[4]) +
+        "  RA={0}\n".format(self.flags[5]) +
+        "  QR={0}\n".format(self.flags[6]) +
+        "  RCODE={0}\n".format(self.flags[7]))
+        s += "  QUESTIONS:\n"
+        for question in self.questions:
+           s = s + "    " + str(question) + "\n"
+        s += "  ANSWERS:\n"
+        for asnwer in self.answers:
+           s = s + "    " + str(answer) + "\n"
+        s += "  AUTHORITIES:\n"
+        for auth in self.authorities:
+           s = s + "    " + str(auth) + "\n"
+        s += "  ADDITIONAL RECORDS:\n"
+        for ar in self.additionalRecords:
+           s = s + "    " + str(ar) + "\n"
+        return s
