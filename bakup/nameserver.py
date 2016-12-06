@@ -20,7 +20,7 @@ class NameServer(object):
     """
     __slots__ = "cache", "sock"
 
-    ifaddr = "129.21.122.81"
+    ifaddr = "192.168.0.4"
     
     rootServers = ("198.41.0.4", "192.228.79.201", "192.33.4.12",
                    "199.7.91.13", "192.203.230.10", "192.5.5.241",
@@ -82,9 +82,9 @@ class NameServer(object):
                             rootQuery.rid = message.rid
                             rootQuestion.name = question.name
                             rootQuery.questions.append(rootQuestion)
-                            self.sendMessage(rootQuery, rootServer)
+                            self.sendMessage(rootQuery, (rootServer, 53))
                             rootReply, sender = self.receiveMessage()
-                            while(rootServer != sender):
+                            while(rootServer != sender[0]):
                                 rootReply, sender = self.receiveMessage()
                             rootRecord = ResourceRecord(
                                 rootReply.authorities[0].name,
@@ -110,9 +110,10 @@ class NameServer(object):
                             tldQuery.questions.append(tldQuestion)
                             #print("##########################$$$")
                             #print(rootRecord.rdata)
-                            self.sendMessage(tldQuery, str(rootRecord.rdata))
+                            self.sendMessage(tldQuery,
+                                             (str(rootRecord.rdata), 53))
                             tldReply, sender = self.receiveMessage()
-                            while(str(rootRecord.rdata) != sender):
+                            while(str(rootRecord.rdata) != sender[0]):
                                 tldReply, sender = self.receiveMessage()
                             # wait for a reply to the query
                             
@@ -134,9 +135,9 @@ class NameServer(object):
                         authQuery = Message()
                         authQuery.rid = message.rid
                         authQuery.questions.append(question)
-                        self.sendMessage(authQuery, str(tldRecord.rdata))
+                        self.sendMessage(authQuery, (str(tldRecord.rdata), 53))
                         authReply, sender = self.receiveMessage()
-                        while(str(tldRecord.rdata) != sender):
+                        while(str(tldRecord.rdata) != sender[0]):
                             authReply, sender = self.receiveMessage()
                         # wait for a reply to the query
                         #while(not(authReply.rid==message.rid
@@ -195,7 +196,7 @@ class NameServer(object):
                                                             a.ttl,
                                                             None,
                                                             a.rdata))
-        print("Received a message from {0}.".format(addr[0]))
+        print("Received a message from {0}.".format(addr))
         print(message)
 
         #print("$$$$$$$$$$$$$$$$$$$$$$")
@@ -205,7 +206,7 @@ class NameServer(object):
         #a.send(addr[0])
         #print("$$$$$$$$$$$$$$$$$$$$$$")
         
-        return message, addr[0]
+        return message, addr
 
     def sendMessage(self, message, destination):
         """
@@ -235,7 +236,7 @@ class NameServer(object):
         print(destination)
         print(d)
         
-        self.sock.sendto(d.pack(), (destination, 53))
+        self.sock.sendto(d.pack(), destination)
 
         '''
         response, sender = self.sock.recvfrom(512)
